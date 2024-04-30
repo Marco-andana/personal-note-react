@@ -2,7 +2,7 @@ import React from "react";
 import NoteHeader from "./NoteHeader";
 import NoteInput from "./NoteInput";
 import NotesList from "./NotesList";
-import { getInitialData } from "../utils/index.js";
+import { getInitialData, showFormattedDate } from "../utils/index.js";
 
 class NotesApp extends React.Component {
     constructor(props) {
@@ -23,8 +23,18 @@ class NotesApp extends React.Component {
     }
 
     onArchiveHandler(id) {
-        const notes = this.state.notes.filter((note) => note.id !== id);
-        this.setState({ notes });
+        this.setState((prevState) => {
+            const updateNotes = prevState.notes.map((note) => {
+                if(note.id === id) {
+                    return {
+                        ...note,
+                        archived: true
+                    }
+                }
+                return note;
+            })
+            return {notes: updateNotes}
+        });
     }
 
     onAddNotesHandler({title, body}) {
@@ -36,6 +46,7 @@ class NotesApp extends React.Component {
                         id: +new Date(),
                         title: title,
                         body: body,
+                        createdAt: +new Date(),
                         archived: false,
                     }
                 ]
@@ -50,10 +61,11 @@ class NotesApp extends React.Component {
             <div className='note-app__body'>
             <div className='note-input'>
             <h2>Buat catatan</h2>
-            <NoteInput />
+            <NoteInput addNotes={this.onAddNotesHandler} />
             </div>
             <h2>Catatan Aktif</h2>
-            <NotesList />
+            <NotesList notes={this.state.notes} onDelete={this.onDeleteHandler} onArchive={this.onArchiveHandler}/>
+            <h2>Arsip</h2>
             </div>
             </>
         )
